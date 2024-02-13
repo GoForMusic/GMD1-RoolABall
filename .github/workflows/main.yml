@@ -16,19 +16,21 @@ jobs:
 
       - name: Install Unity Hub
         run: |
-          wget -q -nv -O unityhub.deb https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage
-          sudo apt-get install ./unityhub.deb -y
-          rm unityhub.deb
+          curl -sL https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage --output UnityHub.AppImage
+          chmod +x UnityHub.AppImage
+          ./UnityHub.AppImage --no-sandbox --no-install --quit
 
       - name: Install Unity Version
-        run: unityhub -- --headless install --version $UNITY_VERSION
+        run: |
+          ./UnityHub.AppImage --no-sandbox --headless install --version $UNITY_VERSION
 
       - name: Activate Unity license
-        run: unityhub -- --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          ./UnityHub.AppImage --no-sandbox --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
 
       - name: Build WebGL
         run: |
-          unityhub -- --headless build --projectPath . --buildTarget WebGL --buildName WebGLBuild --customBuildPath "Builds/WebGL"
+          ./UnityHub.AppImage --no-sandbox --headless build --projectPath . --buildTarget WebGL --buildName WebGLBuild --customBuildPath "Builds/WebGL"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
