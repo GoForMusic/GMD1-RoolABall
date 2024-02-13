@@ -14,22 +14,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Download Unity Hub
+      - name: Install Unity License
         run: |
-          wget -q -nv https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage -O UnityHub.AppImage
+          curl -sSL https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage --output UnityHub.AppImage
           chmod +x UnityHub.AppImage
+          ./UnityHub.AppImage -- --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
 
       - name: Install Unity Version
         run: |
-          ./UnityHub.AppImage --headless install --version $UNITY_VERSION
+          curl -sSL https://public-cdn.cloud.unity3d.com/hub/prod/UnitySetup-${UNITY_VERSION}.exe --output UnitySetup.exe
+          chmod +x UnitySetup.exe
+          yes | ./UnitySetup.exe --unattended --install-location=/opt/unity --components Unity,WebGL --includeRecommended
 
-      - name: Activate Unity license
+      - name: Activate Unity License
         run: |
-          ./UnityHub.AppImage --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
+          /opt/unity/Editor/Unity --quit --batchmode --serial ${{ secrets.UNITY_SERIAL }} --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
 
       - name: Build WebGL
         run: |
-          ./UnityHub.AppImage --headless build --projectPath . --buildTarget WebGL --buildName WebGLBuild --customBuildPath "Builds/WebGL"
+          /opt/unity/Editor/Unity --quit --batchmode --buildTarget WebGL --projectPath . --customBuildTarget WebGL --customBuildName "WebGLBuild" --customBuildPath "Builds/WebGL"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
