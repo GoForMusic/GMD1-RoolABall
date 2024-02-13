@@ -16,9 +16,11 @@ jobs:
 
       - name: Download and Extract Unity Editor
         run: |
-          curl -sSL https://download.unity3d.com/download_unity/${UNITY_VERSION}/LinuxEditorInstaller/Unity.tar.xz --output Unity.tar.xz
-          mkdir -p $HOME/Unity
-          tar -xf Unity.tar.xz -C $HOME/Unity --strip-components=1
+          curl -sSL https://download.unity3d.com/download_unity/${UNITY_VERSION}/UnitySetup-${UNITY_VERSION}.exe --output UnitySetup.exe
+          sudo apt-get update
+          sudo apt-get install unzip
+          unzip -qq UnitySetup.exe -d UnityEditor
+          chmod +x UnityEditor/UnitySetup-${UNITY_VERSION} && UnityEditor/UnitySetup-${UNITY_VERSION} --unattended --install-location=$HOME/Unity
 
       - name: Install Unity License
         run: $HOME/Unity/Editor/Unity --quit --batchmode --createManualActivationFile --manualLicenseFile $HOME/Unity/Unity_v${UNITY_VERSION}.alf
