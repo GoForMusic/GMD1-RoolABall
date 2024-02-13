@@ -8,20 +8,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      UNITY_VERSION: 2022.3.19f1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Unity
-        uses: game-ci/setup-unity@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          unityVersion: 2022.3.19f1
+          node-version: '14'
+
+      - name: Install Unity dependencies
+        run: sudo apt-get install --no-install-recommends -y libgtk2.0-0 libsoup2.4-1 libarchive13 libpng16-16 libgconf-2-4
+
+      - name: Download and install Unity
+        run: |
+          wget -nv https://download.unity3d.com/download_unity/${UNITY_VERSION}/linux/UnitySetup-${UNITY_VERSION} && \
+          chmod +x UnitySetup-${UNITY_VERSION} && \
+          ./UnitySetup-${UNITY_VERSION} --unattended --install-location=/opt/unity --verbose
+
+      - name: Activate Unity license
+        run: sudo /opt/unity/Editor/Unity -quit -batchmode -nographics -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_USERNAME }} -password ${{ secrets.UNITY_PASSWORD }}
 
       - name: Build WebGL
         run: |
           /opt/unity/Editor/Unity \
             -quit \
             -batchmode \
+            -nographics \
             -projectPath . \
             -executeMethod UnityEditor.BuildPlayerWindow+BuildMethod.BuildPlayer \
             -buildTarget WebGL \
