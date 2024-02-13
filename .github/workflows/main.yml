@@ -18,7 +18,7 @@ jobs:
         run: |
           curl -sSL https://download.unity3d.com/download_unity/${UNITY_VERSION}/LinuxEditorInstaller/Unity.tar.xz --output Unity.tar.xz
           mkdir -p $HOME/Unity
-          tar -xJf Unity.tar.xz -C $HOME/Unity --strip-components=1
+          tar -xf Unity.tar.xz -C $HOME/Unity --strip-components=1
 
       - name: Install Unity License
         run: $HOME/Unity/Editor/Unity --quit --batchmode --createManualActivationFile --manualLicenseFile $HOME/Unity/Unity_v${UNITY_VERSION}.alf
