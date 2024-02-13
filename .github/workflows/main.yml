@@ -1,0 +1,37 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Unity
+        uses: game-ci/setup-unity@v1
+        with:
+          unityVersion: 2022.3.19f1
+
+      - name: Build WebGL
+        run: |
+          /opt/unity/Editor/Unity \
+            -quit \
+            -batchmode \
+            -projectPath . \
+            -executeMethod UnityEditor.BuildPlayerWindow+BuildMethod.BuildPlayer \
+            -buildTarget WebGL \
+            -customBuildTarget WebGL \
+            -customBuildName "WebGLBuild" \
+            -customBuildOptions AcceptExternalModificationsToPlayer \
+            -customBuildPath "Builds/WebGL"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./Builds/WebGL
