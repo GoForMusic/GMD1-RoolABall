@@ -14,23 +14,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install Unity Hub
+      - name: Download Unity Hub
         run: |
-          curl -sL https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage --output UnityHub.AppImage
+          wget -q -nv https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage -O UnityHub.AppImage
           chmod +x UnityHub.AppImage
-          ./UnityHub.AppImage --no-sandbox --no-install --quit
 
       - name: Install Unity Version
         run: |
-          ./UnityHub.AppImage --no-sandbox --headless install --version $UNITY_VERSION
+          ./UnityHub.AppImage --headless install --version $UNITY_VERSION
 
       - name: Activate Unity license
         run: |
-          ./UnityHub.AppImage --no-sandbox --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
+          ./UnityHub.AppImage --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
 
       - name: Build WebGL
         run: |
-          ./UnityHub.AppImage --no-sandbox --headless build --projectPath . --buildTarget WebGL --buildName WebGLBuild --customBuildPath "Builds/WebGL"
+          ./UnityHub.AppImage --headless build --projectPath . --buildTarget WebGL --buildName WebGLBuild --customBuildPath "Builds/WebGL"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
