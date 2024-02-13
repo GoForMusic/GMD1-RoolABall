@@ -14,25 +14,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install Unity License
+      - name: Download and Extract Unity Editor
         run: |
-          curl -sSL https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage --output UnityHub.AppImage
-          chmod +x UnityHub.AppImage
-          ./UnityHub.AppImage -- --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
+          curl -sSL https://download.unity3d.com/download_unity/${UNITY_VERSION}/LinuxEditorInstaller/Unity.tar.xz --output Unity.tar.xz
+          mkdir -p $HOME/Unity
+          tar -xJf Unity.tar.xz -C $HOME/Unity --strip-components=1
 
-      - name: Install Unity Version
-        run: |
-          curl -sSL https://public-cdn.cloud.unity3d.com/hub/prod/UnitySetup-${UNITY_VERSION}.exe --output UnitySetup.exe
-          chmod +x UnitySetup.exe
-          yes | ./UnitySetup.exe --unattended --install-location=/opt/unity --components Unity,WebGL --includeRecommended
+      - name: Install Unity License
+        run: $HOME/Unity/Editor/Unity --quit --batchmode --createManualActivationFile --manualLicenseFile $HOME/Unity/Unity_v${UNITY_VERSION}.alf
 
       - name: Activate Unity License
-        run: |
-          /opt/unity/Editor/Unity --quit --batchmode --serial ${{ secrets.UNITY_SERIAL }} --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
+        run: $HOME/Unity/Editor/Unity --quit --batchmode --activateManualLicenseFile $HOME/Unity/Unity_v${UNITY_VERSION}.alf
 
       - name: Build WebGL
-        run: |
-          /opt/unity/Editor/Unity --quit --batchmode --buildTarget WebGL --projectPath . --customBuildTarget WebGL --customBuildName "WebGLBuild" --customBuildPath "Builds/WebGL"
+        run: $HOME/Unity/Editor/Unity --quit --batchmode --buildTarget WebGL --projectPath . --customBuildTarget WebGL --customBuildName "WebGLBuild" --customBuildPath "Builds/WebGL"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
