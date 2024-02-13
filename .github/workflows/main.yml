@@ -14,36 +14,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install Unity dependencies
-        run: sudo apt-get install --no-install-recommends -y libgtk2.0-0 libsoup2.4-1 libarchive13 libpng16-16 libgconf-2-4
-
-      - name: Download and install Unity
+      - name: Install Unity Hub
         run: |
-          wget -nv https://download.unity3d.com/download_unity/${UNITY_VERSION}/linux/UnitySetup-${UNITY_VERSION} && \
-          chmod +x UnitySetup-${UNITY_VERSION} && \
-          ./UnitySetup-${UNITY_VERSION} --unattended --install-location=/opt/unity --verbose
+          wget -q -nv -O unityhub.deb https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage
+          sudo apt-get install ./unityhub.deb -y
+          rm unityhub.deb
+
+      - name: Install Unity Version
+        run: unityhub -- --headless install --version $UNITY_VERSION
 
       - name: Activate Unity license
-        run: sudo /opt/unity/Editor/Unity -quit -batchmode -nographics -serial ${{ secrets.UNITY_SERIAL }} -username ${{ secrets.UNITY_USERNAME }} -password ${{ secrets.UNITY_PASSWORD }}
+        run: unityhub -- --headless license --username ${{ secrets.UNITY_USERNAME }} --password ${{ secrets.UNITY_PASSWORD }}
 
       - name: Build WebGL
         run: |
-          /opt/unity/Editor/Unity \
-            -quit \
-            -batchmode \
-            -nographics \
-            -projectPath . \
-            -executeMethod UnityEditor.BuildPlayerWindow+BuildMethod.BuildPlayer \
-            -buildTarget WebGL \
-            -customBuildTarget WebGL \
-            -customBuildName "WebGLBuild" \
-            -customBuildOptions AcceptExternalModificationsToPlayer \
-            -customBuildPath "Builds/WebGL"
+          unityhub -- --headless build --projectPath . --buildTarget WebGL --buildName WebGLBuild --customBuildPath "Builds/WebGL"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
